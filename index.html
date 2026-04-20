@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Persona - Mobile Optimized</title>
+    <title>AI Persona - Optimized</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -12,90 +12,91 @@
         :root { --accent: #00f2ea; --hot-pink: #ff0050; }
         body { margin: 0; background: #000; font-family: sans-serif; overflow: hidden; color: white; touch-action: none; }
         
-        #video-container { position: relative; width: 100vw; height: 100vh; background: #000; }
+        #video-container { position: relative; width: 100vw; height: 100vh; background: #111; }
         video { transform: scaleX(-1); width: 100%; height: 100%; object-fit: cover; }
 
-        /* Smoothed Hardware Accelerated Container */
+        /* OPTIMIZED SIZE: Narrower width for head-tracking */
         #game-ui {
-            position: absolute;
-            width: 340px;
-            pointer-events: none;
+            position: absolute; 
+            width: 280px; 
+            pointer-events: none; 
             z-index: 10;
-            display: none;
-            flex-direction: column;
+            display: none; 
+            flex-direction: column; 
             align-items: center;
-            will-change: transform;
-            transform: translate3d(-50%, -50%, 0);
+            transform: translate(-50%, -50%);
+            will-change: left, top;
         }
 
         .question-bubble {
-            background: #fff; color: #000; padding: 15px; border-radius: 18px;
-            font-weight: 800; font-size: 1.2rem; margin-bottom: 20px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4); text-align: center; width: 100%;
+            background: #fff; color: #000; padding: 12px 18px; border-radius: 18px;
+            font-weight: 800; font-size: 1.1rem; margin-bottom: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5); text-align: center; width: 100%;
         }
 
-        .options-row { display: flex; gap: 12px; width: 100%; justify-content: center; }
+        .options-row { display: flex; gap: 10px; width: 100%; justify-content: center; }
 
         .option {
-            background: #fff; color: #000; padding: 12px; border-radius: 12px;
-            font-weight: 700; flex: 1; text-align: center; font-size: 0.9rem;
+            background: #fff; color: #000; padding: 10px; border-radius: 10px;
+            font-weight: 700; flex: 1; text-align: center; font-size: 0.85rem;
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* MOBILE SPECIFIC OVERRIDES */
+        /* MOBILE SPECIFIC: Shrink even more for small screens */
         @media (max-width: 600px) {
-            #game-ui { width: 260px; }
-            .question-bubble { font-size: 1rem; padding: 12px; }
-            .option { font-size: 0.8rem; padding: 10px; }
+            #game-ui { width: 220px; }
+            .question-bubble { font-size: 0.95rem; padding: 10px; }
+            .option { font-size: 0.75rem; padding: 8px; }
         }
 
-        .selected-pop { transform: scale(1.3); background: var(--accent) !important; box-shadow: 0 0 25px var(--accent); }
-        .hidden-option { opacity: 0; transform: scale(0.6); }
+        .selected-pop { transform: scale(1.3); background: var(--accent) !important; box-shadow: 0 0 20px var(--accent); }
+        .hidden-option { opacity: 0; transform: scale(0.5); }
 
         #start-overlay, #loading-screen, #result-screen {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.9);
+            position: absolute; inset: 0; background: rgba(0,0,0,0.95);
             display: flex; flex-direction: column; justify-content: center;
             align-items: center; text-align: center; z-index: 100;
         }
 
         #loading-screen, #result-screen { display: none; }
-        .pulse { font-size: 1.8rem; font-weight: 900; color: var(--accent); animation: p 0.8s infinite alternate; }
-        @keyframes p { from { opacity: 0.4; } to { opacity: 1; } }
+        .pulse { font-size: 2rem; font-weight: 900; color: var(--accent); animation: p 0.8s infinite alternate; }
+        @keyframes p { from { opacity: 0.5; } to { opacity: 1; } }
 
         .btn {
             padding: 14px 35px; border-radius: 50px; border: none; 
             background: var(--hot-pink); color: white; font-weight: 800; 
-            cursor: pointer; font-size: 1rem; pointer-events: auto;
+            cursor: pointer; font-size: 1rem;
         }
     </style>
 </head>
 <body>
 
 <div id="start-overlay">
-    <h1 style="color:var(--accent); margin-bottom: 5px;">AI Persona</h1>
-    <p style="margin-bottom: 25px; opacity: 0.8;">Tilt head to choose</p>
-    <button class="btn" id="init-btn">OPEN CAMERA</button>
+    <h1 style="color:var(--accent)">AI Persona Game</h1>
+    <button class="btn" id="init-btn">START CAMERA</button>
+    <p id="error-log" style="color:red; margin-top:10px; font-size: 0.8rem;"></p>
 </div>
 
 <div id="video-container">
     <video id="input_video" playsinline></video>
     <div id="game-ui">
-        <div class="question-bubble" id="q-text">Loading...</div>
+        <div class="question-bubble" id="q-text">Ready?</div>
         <div class="options-row">
-            <div id="opt-left" class="option">---</div>
-            <div id="opt-right" class="option">---</div>
+            <div id="opt-left" class="option">Option A</div>
+            <div id="opt-right" class="option">Option B</div>
         </div>
     </div>
-    <div id="loading-screen"><div class="pulse">NEURAL SYNC...</div></div>
+    <div id="loading-screen"><div class="pulse">ANALYZING...</div></div>
     <div id="result-screen">
         <h1 id="res-title" style="color:var(--accent)">Result</h1>
-        <p id="res-desc" style="font-size: 1.1rem; max-width: 85%; margin-bottom: 20px;"></p>
-        <button class="btn" onclick="window.location.reload()">REPLAY</button>
+        <p id="res-desc" style="font-size: 1.1rem; max-width: 85%;"></p>
+        <button class="btn" onclick="location.reload()">PLAY AGAIN</button>
     </div>
 </div>
 
 <script>
     const videoElement = document.getElementById('input_video');
+    const startOverlay = document.getElementById('start-overlay');
     const gameUI = document.getElementById('game-ui');
     const qText = document.getElementById('q-text');
     const optLeft = document.getElementById('opt-left');
@@ -103,40 +104,40 @@
 
     let currentQ = 0, score = 0, isLocked = false, isFinished = false;
     
-    // Smoothing variables
+    // Smoothing (Lerp) variables
     let currentX = window.innerWidth / 2;
     let currentY = window.innerHeight / 2;
-    const smoothing = 0.15; // Lower = smoother but slower, Higher = snappier
 
     const questions = [
-        { q: "Problem solving?", a: "Fast Instinct", b: "Deep Logic" },
-        { q: "Design style?", a: "Clean/Minimal", b: "Flashy/Bold" },
-        { q: "Communication?", a: "Direct Text", b: "Voice/Audio" },
-        { q: "Work vibe?", a: "Structured", b: "Experimental" }
+        { q: "Problem solving?", a: "Instinctive", b: "Methodical" },
+        { q: "Communication?", a: "Direct", b: "Friendly" },
+        { q: "Energy?", a: "Solar", b: "Battery" },
+        { q: "Brain Type?", a: "Visual Art", b: "Logic Code" }
     ];
 
     function onResults(results) {
         if (!results.multiFaceLandmarks?.[0] || isFinished) return;
-        
+        if(gameUI.style.display !== 'flex') gameUI.style.display = 'flex';
+
         const landmarks = results.multiFaceLandmarks[0];
         const nose = landmarks[1];
         
-        // Targeted X/Y
+        // Target tracking
         const targetX = (1 - nose.x) * window.innerWidth;
         const targetY = nose.y * window.innerHeight;
 
-        // Linear Interpolation (Lerp) for buttery smooth movement
-        currentX += (targetX - currentX) * smoothing;
-        currentY += (targetY - currentY) * smoothing;
+        // Apply 15% interpolation for smooth movement
+        currentX += (targetX - currentX) * 0.15;
+        currentY += (targetY - currentY) * 0.15;
 
-        gameUI.style.display = 'flex';
-        gameUI.style.transform = `translate3d(${currentX}px, ${currentY - (window.innerHeight * 0.25)}px, 0) translate3d(-50%, -50%, 0)`;
+        gameUI.style.left = currentX + 'px';
+        gameUI.style.top = (currentY - 180) + 'px'; // Raised slightly higher for smaller bubble
 
         if (isLocked) return;
 
         const tilt = landmarks[33].y - landmarks[263].y;
-        if (tilt > 0.09) triggerSelection('right');
-        else if (tilt < -0.09) triggerSelection('left');
+        if (tilt > 0.08) triggerSelection('right');
+        else if (tilt < -0.08) triggerSelection('left');
     }
 
     function triggerSelection(side) {
@@ -166,16 +167,10 @@
             document.getElementById('result-screen').style.display = 'flex';
             const title = document.getElementById('res-title');
             const desc = document.getElementById('res-desc');
-            const results = [
-                {t: "The Logic Engine", d: "You are precise, analytical, and highly efficient."},
-                {t: "The Prompt Poet", d: "You find the soul in the machine. Creative and intuitive."},
-                {t: "The Hybrid", d: "The perfect balance of human heart and silicon brain."},
-                {t: "The Maverick", d: "You break the rules to find better ways. Innovation at its core."}
-            ];
-            const final = results[Math.min(score, results.length-1)];
-            title.innerText = final.t;
-            desc.innerText = final.d;
-        }, 1800);
+            if (score <= 1) { title.innerText = "The Logic Architect"; desc.innerText = "Structured and sharp."; }
+            else if (score <= 3) { title.innerText = "The Creative Spark"; desc.innerText = "A visionary neural network."; }
+            else { title.innerText = "The Neural Maverick"; desc.innerText = "Pure, raw AI energy."; }
+        }, 2000);
     }
 
     function updateQuestion() {
@@ -185,23 +180,21 @@
     }
 
     const faceMesh = new FaceMesh({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`});
-    faceMesh.setOptions({ 
-        maxNumFaces: 1, 
-        refineLandmarks: false, 
-        minDetectionConfidence: 0.6, 
-        minTrackingConfidence: 0.6 
-    });
+    faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: false, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
     faceMesh.onResults(onResults);
 
     const camera = new Camera(videoElement, {
         onFrame: async () => { await faceMesh.send({image: videoElement}); },
-        width: 640, height: 480 
+        width: 640, height: 480 // Lower internal resolution for faster mobile processing
     });
 
     document.getElementById('init-btn').onclick = () => {
         document.getElementById('start-overlay').style.display = 'none';
         updateQuestion();
-        camera.start();
+        camera.start().catch(err => {
+            document.getElementById('start-overlay').style.display = 'flex';
+            document.getElementById('error-log').innerText = "Camera Error: " + err.message;
+        });
     };
 </script>
 </body>
